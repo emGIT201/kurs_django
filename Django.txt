@@ -1,0 +1,78 @@
+cd desktop
+python -m venv #podaæ nazwê nowego folderu
+dir #sprawdzanie folderu
+wybraæ lokalizacjê + \Scripts\activate
+pip install django
+(python.exe -m pip install --upgrade pip #aktualizacja django
+django -admin startproject filmy . 
+python manage.py runserver
+CTRL+ Break #stop serwer
+
+django -admin startapp film_web #dodanie nowego folderu
+#nastêpnie wybieramy settings i dodajemy nazwê nowego folderu do INSTALLED_APPS
+
+python manage.py migrate
+python manage.py createsuperuser
+
+tworzymy model np. w MODELS.PY
+class Film(models.Model):
+    tytu³=models.CharField(max_length=64)
+    re¿yser=models.CharField(max_length=64)
+
+python manage.py makemigrations
+python manage.py migrate
+
+
+nastêpnie rejestrujemy modele w admin.py aby by³ widoczny
+
+from .models import Film
+admin.site.register(Film)
+
+
+'przyk³adowe models.field:
+
+
+class Film(models.Model):
+    tytu³=models.CharField(max_length=100, blank=False, unique=True)
+    rok=models.PositiveIntegerField(blank=False, default=2000)
+    opis_filmu=models.TextField(default='')
+    premiera=models.DateField(null=True, blank=True)
+    imdb_rating=models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True) #ranking od 1 do 10, max 4 cyfry, 2 miejsca po przecinku
+    plakat=models.ImageField(upload_to='plakaty', null=True, blank=True)
+
+    def __str__(self):
+        return self.tytu³ + ' (' + str(self.rok) + ')'
+    #funkcja powoduje, ¿e wyœwietla siê nazwa filmu zamiast Film object (1)
+
+    def tytu³_z_rokiem(self):
+        return '{} ({})'.format(self.tytu³, self.rok)'
+
+
+Admin:
+@admin.register(Film)
+class FilmAdmin(admin.ModelAdmin):
+    fields = ['tytu³','rok','opis_filmu']
+    #exclude = ['opis_filmu']
+    list_display = ['tytu³','rok','imdb_rating']
+    #list_filter = ['tytu³']
+    search_fields = ['tytu³','opis_filmu']
+
+
+URLS:
+from django.contrib import admin
+from django.urls import path
+from film_web.views import test_response
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('test/', test_response)
+
+
+VIEWS:
+from django.shortcuts import render
+from django.http import HttpResponse
+
+# Create your views here.
+
+def test_response(request):
+    return HttpResponse ('Pierwszy test')
